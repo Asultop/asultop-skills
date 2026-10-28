@@ -36,7 +36,7 @@ cp -r reverse-mcp-anything/skills/reverse-mcp ~/.claude/skills/reverse-mcp
 本目录采用 `anthropics/skills` 的 marketplace 结构：`.claude-plugin/marketplace.json` 加一个插件目录。
 
 ```text
-/plugin marketplace add <本 Skills 目录的绝对路径>
+/plugin marketplace add Asultop/asultop-skills
 /plugin install reverse-mcp-anything@asultop-skills
 ```
 

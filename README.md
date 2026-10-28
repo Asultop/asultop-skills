@@ -36,7 +36,7 @@ Then type `/reverse-mcp`. The folder name must stay `reverse-mcp` because Agent 
 This directory follows the `anthropics/skills` marketplace layout: `.claude-plugin/marketplace.json` plus a plugin folder.
 
 ```text
-/plugin marketplace add <absolute-path-to-this-Skills-directory>
+/plugin marketplace add Asultop/asultop-skills
 /plugin install reverse-mcp-anything@asultop-skills
 ```
 
