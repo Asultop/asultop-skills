@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "reverse-mcp-acme": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:/work/reverse-mcp/acme/server",
+        "run",
+        "reverse-mcp-acme"
+      ],
+      "env": {
+        "REVERSE_MCP_BRIDGE": "http://127.0.0.1:8765",
+        "REVERSE_MCP_TOKEN_FILE": "C:/Users/me/.reverse-mcp/acme.token"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "asultop-skills",
+  "owner": {
+    "name": "AsulTop"
+  },
+  "metadata": {
+    "description": "AsulTop's agent skills, including Reverse-MCP-Anything.",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "reverse-mcp-anything",
+      "description": "Reverse-MCP-Anything: reverse-engineer a local target and expose its human-visible surfaces as MCP tools, using accessibility, IPC, hooks, or an explicitly approved patched copy.",
+      "source": "./reverse-mcp-anything",
+      "strict": false,
+      "skills": [
+        "./skills/reverse-mcp"
+      ]
+    }
+  ]
+}

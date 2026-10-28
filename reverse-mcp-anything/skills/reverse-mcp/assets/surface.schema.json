@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reverse-mcp.local/surface.schema.json",
+  "title": "Reverse-MCP Surface Map",
+  "type": "object",
+  "required": ["schema_version", "target", "mode", "surfaces", "config", "events", "actions", "out_of_scope"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_at": {"type": "string"},
+    "target": {"$ref": "#/$defs/target"},
+    "mode": {"enum": ["observer", "protocol", "hook", "patch", "hybrid"]},
+    "surfaces": {"type": "array", "items": {"$ref": "#/$defs/surface"}},
+    "config": {"type": "array", "items": {"$ref": "#/$defs/configEntry"}},
+    "events": {"type": "array", "items": {"$ref": "#/$defs/event"}},
+    "actions": {"type": "array", "items": {"$ref": "#/$defs/action"}},
+    "out_of_scope": {"type": "array", "items": {"$ref": "#/$defs/outOfScope"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "notes": {"type": "string"}
+  },
+  "$defs": {
+    "target": {
+      "type": "object",
+      "required": ["name", "version", "path", "sha256", "platform", "arch", "ui_framework", "runtime"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+        "platform": {"type": "string"},
+        "arch": {"type": "string"},
+        "ui_framework": {"type": "string"},
+        "runtime": {"type": "string"},
+        "pid": {"type": ["integer", "null"]},
+        "install_root": {"type": "string"},
+        "user_data_root": {"type": "string"}
+      }
+    },
+    "selector": {
+      "type": "object",
+      "required": ["strategy", "value"],
+      "properties": {
+        "strategy": {
+          "enum": ["native_command", "ipc_method", "accessibility_id", "accessibility_name", "object_path", "dom_selector", "role_name", "pty_pattern", "coordinates"]
+        },
+        "value": {"type": ["string", "object", "array"]},
+        "fallback": {"$ref": "#/$defs/selector"},
+        "brittle": {"type": "boolean"},
+        "notes": {"type": "string"}
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {"type": "string"},
+        "type": {"enum": ["string", "integer", "number", "boolean", "enum", "array", "object", "secret", "unknown"]},
+        "description": {"type": "string"},
+        "required": {"type": "boolean"},
+        "enum": {"type": "array"}
+      }
+    },
+    "surface": {
+      "type": "object",
+      "required": ["id", "kind", "label", "selector", "reads", "actions", "risk", "confidence", "evidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
+        "kind": {
+          "enum": ["window", "menu", "menu_item", "toolbar", "tab", "list", "tree", "table", "text", "input", "button", "checkbox", "radio", "combo", "slider", "dialog", "status", "notification", "canvas", "terminal", "webview", "custom"]
+        },
+        "label": {"type": "string"},
+        "parent_id": {"type": ["string", "null"]},
+        "selector": {"$ref": "#/$defs/selector"},
+        "reads": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "actions": {"type": "array", "items": {"type": "string"}},
+        "visible_when": {"type": "string"},
+        "risk": {"enum": ["read", "write", "destructive", "external"]},
+        "confidence": {"enum": ["observed", "inferred", "unknown"]},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "observed": {"type": "object"},
+        "brittle": {"type": "boolean"},
+        "notes": {"type": "string"}
+      }
+    },
+    "configEntry": {
+      "type": "object",
+      "required": ["id", "key", "type", "source", "precedence", "writable", "apply", "encryption", "risk", "evidence", "confidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
+        "key": {"type": "string"},
+        "type": {"enum": ["string", "integer", "number", "boolean", "enum", "array", "object", "secret", "unknown"]},
+        "default": {},
+        "current": {},
+        "source": {"type": "string"},
+        "sources": {"type": "array", "items": {"type": "string"}},
+        "precedence": {"type": "integer"},
+        "writable": {"type": "boolean"},
+        "apply": {"enum": ["live", "restart", "relogin", "unknown"]},
+        "validation": {"type": "object"},
+        "encryption": {"enum": ["none", "dpapi", "keychain", "libsecret", "aes", "custom", "unknown"]},
+        "risk": {"enum": ["read", "write", "destructive", "external"]},
+        "selector": {"type": "string"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"enum": ["observed", "inferred", "unknown"]},
+        "notes": {"type": "string"}
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["id", "name", "source", "trigger", "payload", "rate", "observed", "evidence", "confidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
+        "name": {"type": "string"},
+        "source": {"enum": ["ui", "ipc", "network", "file", "log", "timer", "hook", "unknown"]},
+        "trigger": {"type": "string"},
+        "payload": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "rate": {"enum": ["low", "medium", "high", "unknown"]},
+        "observed": {"type": "boolean"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"enum": ["observed", "inferred", "unknown"]},
+        "notes": {"type": "string"}
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["id", "surface_id", "verb", "args", "side_effects", "risk", "confirmation", "idempotent", "timeout_ms", "evidence", "confidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]*$"},
+        "surface_id": {"type": ["string", "null"]},
+        "verb": {"type": "string"},
+        "args": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "side_effects": {"type": "array", "items": {"type": "string"}},
+        "risk": {"enum": ["read", "write", "destructive", "external"]},
+        "confirmation": {"enum": ["none", "always", "destructive"]},
+        "idempotent": {"type": "boolean"},
+        "timeout_ms": {"type": "integer", "minimum": 1},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"enum": ["observed", "inferred", "unknown"]},
+        "notes": {"type": "string"}
+      }
+    },
+    "outOfScope": {
+      "type": "object",
+      "required": ["item", "reason"],
+      "properties": {
+        "item": {"type": "string"},
+        "reason": {"type": "string"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["id", "type", "summary"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^E-[A-Za-z0-9_.-]+$"},
+        "type": {"enum": ["static", "runtime", "inferred", "non-REA"]},
+        "summary": {"type": "string"},
+        "source": {"type": "string"},
+        "confidence": {"enum": ["high", "medium", "low"]}
+      }
+    }
+  }
+}

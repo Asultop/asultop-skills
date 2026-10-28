@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-28T10:00:00+08:00",
+  "target": {
+    "name": "Acme Notes",
+    "version": "4.2.1",
+    "path": "C:/Program Files/Acme/Notes/acme.exe",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "platform": "windows",
+    "arch": "x86_64",
+    "ui_framework": "wpf",
+    "runtime": "dotnet"
+  },
+  "mode": "observer",
+  "surfaces": [
+    {
+      "id": "main.window",
+      "kind": "window",
+      "label": "Acme Notes",
+      "selector": {"strategy": "accessibility_id", "value": "MainWindow"},
+      "reads": [{"name": "title", "type": "string", "description": "Window title"}],
+      "actions": [],
+      "visible_when": "app is running",
+      "risk": "read",
+      "confidence": "observed",
+      "evidence": ["E-001"]
+    },
+    {
+      "id": "main.status",
+      "kind": "status",
+      "label": "Status bar",
+      "parent_id": "main.window",
+      "selector": {"strategy": "accessibility_id", "value": "StatusBar"},
+      "reads": [{"name": "text", "type": "string", "description": "Current status message"}],
+      "actions": [],
+      "visible_when": "main window is open",
+      "risk": "read",
+      "confidence": "observed",
+      "observed": {"text": "Ready"},
+      "evidence": ["E-001"]
+    },
+    {
+      "id": "settings.theme",
+      "kind": "combo",
+      "label": "Theme",
+      "selector": {"strategy": "accessibility_id", "value": "ThemeCombo"},
+      "reads": [{"name": "value", "type": "enum", "description": "light, dark, system", "enum": ["light", "dark", "system"]}],
+      "actions": ["action.set_theme"],
+      "visible_when": "Settings dialog is open",
+      "risk": "write",
+      "confidence": "observed",
+      "observed": {"value": "dark"},
+      "evidence": ["E-002"]
+    },
+    {
+      "id": "settings.autosave",
+      "kind": "input",
+      "label": "Autosave interval (seconds)",
+      "selector": {"strategy": "accessibility_id", "value": "AutosaveBox"},
+      "reads": [{"name": "value", "type": "integer", "description": "5-600 seconds"}],
+      "actions": [],
+      "visible_when": "Settings dialog is open",
+      "risk": "write",
+      "confidence": "inferred",
+      "evidence": ["E-002"]
+    }
+  ],
+  "config": [
+    {
+      "id": "config.theme",
+      "key": "ui.theme",
+      "type": "enum",
+      "default": "system",
+      "current": "dark",
+      "source": "%APPDATA%/Acme/settings.json",
+      "precedence": 2,
+      "writable": true,
+      "apply": "live",
+      "validation": {"enum": ["light", "dark", "system"]},
+      "encryption": "none",
+      "risk": "write",
+      "selector": "settings.theme",
+      "evidence": ["E-002"],
+      "confidence": "observed"
+    },
+    {
+      "id": "config.autosave",
+      "key": "editor.autosave_seconds",
+      "type": "integer",
+      "default": 30,
+      "current": 30,
+      "source": "%APPDATA%/Acme/settings.json",
+      "precedence": 2,
+      "writable": true,
+      "apply": "restart",
+      "validation": {"minimum": 5, "maximum": 600},
+      "encryption": "none",
+      "risk": "write",
+      "selector": "settings.autosave",
+      "evidence": ["E-002"],
+      "confidence": "inferred"
+    }
+  ],
+  "events": [
+    {
+      "id": "event.export_done",
+      "name": "export.completed",
+      "source": "file",
+      "trigger": "Export writes the target file and closes the progress dialog",
+      "payload": [{"name": "path", "type": "string"}],
+      "rate": "low",
+      "observed": false,
+      "evidence": ["E-003"],
+      "confidence": "inferred"
+    },
+    {
+      "id": "event.status_changed",
+      "name": "status.changed",
+      "source": "ui",
+      "trigger": "Status bar text changes",
+      "payload": [{"name": "text", "type": "string"}],
+      "rate": "medium",
+      "observed": true,
+      "evidence": ["E-001"],
+      "confidence": "observed"
+    }
+  ],
+  "actions": [
+    {
+      "id": "action.set_theme",
+      "surface_id": "settings.theme",
+      "verb": "set",
+      "args": [{"name": "value", "type": "enum", "required": true, "enum": ["light", "dark", "system"]}],
+      "side_effects": ["updates settings.json", "repaints UI"],
+      "risk": "write",
+      "confirmation": "none",
+      "idempotent": true,
+      "timeout_ms": 5000,
+      "evidence": ["E-002"],
+      "confidence": "observed"
+    },
+    {
+      "id": "action.export",
+      "surface_id": null,
+      "verb": "export",
+      "args": [{"name": "path", "type": "string", "required": true}],
+      "side_effects": ["writes a file on disk", "shows a progress dialog"],
+      "risk": "write",
+      "confirmation": "always",
+      "idempotent": false,
+      "timeout_ms": 60000,
+      "evidence": ["E-003"],
+      "confidence": "inferred"
+    }
+  ],
+  "out_of_scope": [
+    {"item": "cloud sync", "reason": "requires a remote account and is outside the local automation scope"},
+    {"item": "licence activation", "reason": "security/licence control; excluded from automation"}
+  ],
+  "evidence": [
+    {"id": "E-001", "type": "runtime", "summary": "UIA tree exposes MainWindow and StatusBar with text", "source": "UIA inspection 2026-10-28", "confidence": "high"},
+    {"id": "E-002", "type": "static", "summary": "settings.json contains ui.theme and editor.autosave_seconds; theme applies live", "source": "settings.json + UIA", "confidence": "high"},
+    {"id": "E-003", "type": "inferred", "summary": "Export completion detected by file appearance; no event captured", "source": "code path only", "confidence": "low"}
+  ]
+}
